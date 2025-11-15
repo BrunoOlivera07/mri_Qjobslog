@@ -70,12 +70,12 @@ QBCore.Commands.Add('backupdutylogs', 'Cria um backup do duty_logs.json (ADMIN)'
 
     local ok, msg = doBackup()
     if ok then
-        print(('[Duty Logs] Backup criado por %s em: %s'):format(src == 0 and 'Console' or GetPlayerName(src), msg))
+        --print(('[Duty Logs] Backup criado por %s em: %s'):format(src == 0 and 'Console' or GetPlayerName(src), msg))
         if src > 0 then
             TriggerClientEvent('ox_lib:notify', src, { type = 'success', title = 'Duty Logs', description = 'Backup salvo: ' .. msg })
         end
     else
-        print('[Duty Logs] ERRO backup: ' .. (msg or 'desconhecido'))
+        --print('[Duty Logs] ERRO backup: ' .. (msg or 'desconhecido'))
         if src > 0 then
             TriggerClientEvent('ox_lib:notify', src, { type = 'error', title = 'Duty Logs', description = msg or 'Erro ao criar backup.' })
         end

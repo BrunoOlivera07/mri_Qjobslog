@@ -22,7 +22,7 @@ local function LoadLogs()
     if not content or content == '' then return {} end
     local ok, data = pcall(json.decode, content)
     if ok and type(data) == 'table' then return data end
-    print('⚠️ [Duty Logs] JSON inválido em ' .. LOG_FILE .. ', reiniciando lista.')
+    --print('⚠️ [Duty Logs] JSON inválido em ' .. LOG_FILE .. ', reiniciando lista.')
     return {}
 end
 
@@ -30,12 +30,12 @@ end
 local function SaveLogs(tbl)
     local encoded = json.encode(tbl, { indent = true })
     if not encoded then
-        print('[Duty Logs] Falha ao codificar JSON.')
+        --print('[Duty Logs] Falha ao codificar JSON.')
         return false
     end
     local ok = SaveResourceFile(RESOURCE, LOG_FILE, encoded, #encoded)
     if not ok then
-        print('[Duty Logs] SaveResourceFile falhou. Verifique se a pasta "logs" existe dentro do recurso.')
+        --print('[Duty Logs] SaveResourceFile falhou. Verifique se a pasta "logs" existe dentro do recurso.')
         return false
     end
     return true
@@ -47,7 +47,7 @@ local function AppendLog(entry)
     logs[#logs + 1] = entry
     local ok = SaveLogs(logs)
     if ok then
-        print('[Duty Logs] Log gravado: ' .. (entry.status or 'N/A') .. ' | ' .. (entry.job or 'N/A'))
+        --print('[Duty Logs] Log gravado: ' .. (entry.status or 'N/A') .. ' | ' .. (entry.job or 'N/A'))
     end
 end
 
@@ -434,7 +434,7 @@ QBCore.Commands.Add('cleardutylogs', 'Limpa todo o duty_logs.json (ADMIN)', {}, 
 
     local ok = SaveResourceFile(resource, relPath, '[]', 2)
     if ok then
-        print(('[Duty Logs] %s limpou o arquivo duty_logs.json'):format(src == 0 and 'Console' or GetPlayerName(src)))
+        --print(('[Duty Logs] %s limpou o arquivo duty_logs.json'):format(src == 0 and 'Console' or GetPlayerName(src)))
         if src > 0 then
             TriggerClientEvent('ox_lib:notify', src, {
                 type = 'success', title = 'Duty Logs', description = 'Todos os registros foram apagados!'

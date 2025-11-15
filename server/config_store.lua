@@ -25,19 +25,19 @@ local function LoadOrgConfig()
     end
     local ok, data = pcall(json.decode, raw)
     if ok and type(data) == 'table' then return data end
-    print('[Config] org_config.json inválido. Recriando a partir do Config.AuthJobs.')
+    --print('[Config] org_config.json inválido. Recriando a partir do Config.AuthJobs.')
     return LoadOrgConfig() -- tenta recriar
 end
 
 local function SaveOrgConfig(tbl)
     local encoded = json.encode(tbl, { indent = true })
     if not encoded then
-        print('[Config] Falha ao codificar org_config.')
+        --print('[Config] Falha ao codificar org_config.')
         return false
     end
     local ok = SaveResourceFile(RESOURCE, CONFIG_FILE, encoded, #encoded)
     if not ok then
-        print('[Config] SaveResourceFile falhou. Verifique a pasta "logs".')
+        --print('[Config] SaveResourceFile falhou. Verifique a pasta "logs".')
         return false
     end
     return true
@@ -117,7 +117,7 @@ lib.callback.register('dutylogcfg:saveOrg', function(src, key, data)
     local ok = SaveOrgConfig(OrgConfig)
     if ok then
         SyncRuntimeConfig()
-        print(('[Config] Org "%s" salva por %s'):format(key, GetPlayerName(src)))
+       --print(('[Config] Org "%s" salva por %s'):format(key, GetPlayerName(src)))
         return { ok = true }
     end
     return { ok = false, reason = 'save_fail' }
@@ -132,7 +132,7 @@ lib.callback.register('dutylogcfg:deleteOrg', function(src, key)
     local ok = SaveOrgConfig(OrgConfig)
     if ok then
         SyncRuntimeConfig()
-        print(('[Config] Org "%s" removida por %s'):format(key, GetPlayerName(src)))
+        --print(('[Config] Org "%s" removida por %s'):format(key, GetPlayerName(src)))
         return { ok = true }
     end
     return { ok = false, reason = 'save_fail' }
@@ -142,7 +142,7 @@ RegisterNetEvent('kael-dutylog:config:saveOrg', function(key, data)
     if not IsStaff(source) then return end
     OrgConfig[key] = data
     SaveOrgConfig(OrgConfig)
-    print('[DutyLog] Organização "' .. key .. '" salva com sucesso.')
+    --print('[DutyLog] Organização "' .. key .. '" salva com sucesso.')
 end)
 
-print(json.encode(data, { indent = true }))
+--print(json.encode(data, { indent = true }))
