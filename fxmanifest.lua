@@ -2,9 +2,9 @@ fx_version 'cerulean'
 lua54 'yes'
 game 'gta5'
 
-author 'Gordela | New Age Studios'
+author 'Gordela | New Age Studios | Refatorado por S&S STORE - SNOW DEV'
 description 'Duty Logs + In-game Configurator (ox_lib)'
-version '1.0.0'
+version '2.0.0'
 
 shared_scripts {
     '@ox_lib/init.lua',
@@ -22,6 +22,6 @@ server_scripts {
 }
 
 files {
-    'mri_Qjobslog.sql',
+    -- 'mri_Qjobslog.sql',
     'locales/*.json'
 }
