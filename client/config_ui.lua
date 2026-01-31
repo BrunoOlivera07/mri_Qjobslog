@@ -1,87 +1,108 @@
 local QBCore = exports[Config.Core or 'qb-core']:GetCoreObject()
 
 local function notifyOk(msg)
-    lib.notify({ title = 'Duty Logs', description = msg, type = 'success', position = 'top' })
+    lib.notify({ title = locale('menu.backup_title'), description = msg, type = 'success', position = 'top' })
 end
 
 local function notifyWarn(msg)
-    lib.notify({ title = 'Duty Logs', description = msg, type = 'warning', position = 'top' })
+    lib.notify({ title = locale('menu.backup_title'), description = msg, type = 'warning', position = 'top' })
 end
 
 local function notifyErr(msg)
-    lib.notify({ title = 'Duty Logs', description = msg, type = 'error', position = 'top' })
+    lib.notify({ title = locale('menu.backup_title'), description = msg, type = 'error', position = 'top' })
 end
 
--- Function to convert hexadecimal (#rrggbb) to decimal number.
-local function hexToDecimal(hex)
-    hex = hex:gsub("#", "")
-    return tonumber(hex, 16)
+-- Function to parse Color (Hex or RGB string) to Decimal
+local function ParseColor(input)
+    if not input then return 3447003 end
+    local str = tostring(input):gsub("#","")
+    
+    -- Tenta formato "255, 255, 255"
+    if str:find(",") then
+        local r, g, b = str:match("(%d+)%s*[,%s]%s*(%d+)%s*[,%s]%s*(%d+)")
+        if r and g and b then
+            return (tonumber(r) * 65536) + (tonumber(g) * 256) + tonumber(b)
+        end
+    end
+
+    -- Tenta Hex
+    return tonumber(str, 16) or 3447003
 end
 
 -- Create Org Dialog
 local function showCreateOrgDialog()
-    local input = lib.inputDialog('Novo Bate Ponto Log', {
-        { type = 'input',   label = 'Emprego ',                   placeholder = 'police', required = true, description = 'Cargo que irá receber o sistema de ponto' },
-        { type = 'input',   label = 'Titulo do Bot',              placeholder = 'Logs Polícia', required = true, description = 'Título que aparecerá no log do Discord' },
-        { type = 'color', label = 'Cor embed do Log', default = '#ffffff', description = 'Escolha uma cor para o embed (RGB)' },
-        { type = 'input',   label = 'Icone tamanho 200x200',      placeholder = 'https://...', description = 'URL do ícone que aparecerá no log do Discord' },
-        { type = 'input',   label = 'Grade do cargo',             placeholder = '3', required = true, description = 'Grade mínima para usar o comando de historico de ponto (0 para todos)' },
-        { type = 'input',   label = 'Webhook entrada/saida',      placeholder = 'https://discord.com/api/webhooks/...', required = true, description = 'Webhook para onde os logs de entrada e saída serão enviados' },
-        { type = 'input',   label = 'Webhook Historico ponto',    placeholder = 'https://discord.com/api/webhooks/...', required = true, description = 'Webhook para onde os logs de histórico de ponto serão enviados' },
+    local input = lib.inputDialog(locale('dialog.create_org_title'), {
+        { type = 'input',   label = locale('input.job_name'),                   placeholder = 'police', required = true, description = locale('input.job_name_desc') },
+        { type = 'input',   label = locale('input.log_title'),              placeholder = 'Logs Polícia', required = true, description = locale('input.log_title_desc') },
+        { type = 'color',   label = locale('input.color_selector'), default = '#ffffff' },
+        { type = 'input',   label = locale('input.color_manual'),        placeholder = '255, 0, 0 ou #FF0000', description = locale('input.color_manual_desc') },
+        { type = 'input',   label = locale('input.icon_url'),      placeholder = 'https://...', description = locale('input.icon_url_desc') },
+        { type = 'input',   label = locale('input.min_grade'),             placeholder = '3', required = true, description = locale('input.min_grade_desc') },
+        { type = 'input',   label = locale('input.webhook'),      placeholder = 'https://discord.com/api/webhooks/...', required = true, description = locale('input.webhook_desc') },
+        { type = 'input',   label = locale('input.report_webhook'),    placeholder = 'https://discord.com/api/webhooks/...', required = true, description = locale('input.report_webhook_desc') },
     })
     if not input then return openRootMenu() end
 
     local key = (input[1] or ''):lower()
     if key == '' then
-        notifyErr('Job inválido.')
+        notifyErr(locale('error.invalid_job'))
         return openRootMenu()
     end
 
+    local colorManual = input[4]
+    local colorPicker = input[3]
+    local finalColor  = (colorManual and colorManual ~= '') and ParseColor(colorManual) or ParseColor(colorPicker)
+
     local payload = {
-        LogTitle       = (input[2] and input[2] ~= '') and input[2] or ('Logs ' .. key),
-        Color = hexToDecimal(input[3]) or 3447003,
-        IconURL        = input[4] or '',
-        MinReportGrade = tonumber(input[5]) or 0,
-        Webhook        = input[6] or '',
-        ReportWebhook  = input[7] or '',
+        LogTitle       = (input[2] and input[2] ~= '') and input[2] or (locale('desc.default_log_title') .. key),
+        Color          = finalColor,
+        IconURL        = input[5] or '',
+        MinReportGrade = tonumber(input[6]) or 0,
+        Webhook        = input[7] or '',
+        ReportWebhook  = input[8] or '',
     }
 
     local save = lib.callback.await('dutylogcfg:saveOrg', false, key, payload)
     if save and save.ok then
-        notifyOk('Organização criada!')
+        notifyOk(locale('notify.org_created'))
     else
-        notifyErr('Falha ao salvar organização.')
+        notifyErr(locale('error.save_failed'))
     end
     openRootMenu()
 end
 
 --Edit org dialog
 local function showEditOrgDialog(orgName, orgData)
-    local input = lib.inputDialog('Editar Organização: ' .. orgName, {
-        { type = 'input',   label = 'Título do Log', default = orgData.LogTitle or '',description = 'Título que aparecerá no log do Discord'},
-        { type = 'color',   label = 'Cor do Embed', default = string.format("#%06x", tonumber(orgData.Color) or 3447003), description = 'Escolha uma cor para o embed (RGB)' },
-        { type = 'input',   label = 'Icon URL', default = orgData.IconURL or '', description = 'URL do ícone que aparecerá no log do Discord'  },
-        { type = 'input',   label = 'Webhook Principal', default = orgData.Webhook or '', description = 'Webhook para logs de entrada/saída' },
-        { type = 'input',   label = 'Webhook de Relatório (opcional)', default = orgData.ReportWebhook or '', description = 'Webhook para logs de histórico' },
-        { type = 'number',  label = 'Grade mínima p/ Relatório', default = tonumber(orgData.MinReportGrade or 0), description = 'Grade mínima para usar o comando de histórico de ponto (0 para todos)' }
+    local input = lib.inputDialog(locale('dialog.edit_org_title', orgName), {
+        { type = 'input',   label = locale('input.log_title'), default = orgData.LogTitle or '',description = locale('input.log_title_desc')},
+        { type = 'color',   label = locale('input.color_selector'), default = string.format("#%06x", tonumber(orgData.Color) or 3447003) },
+        { type = 'input',   label = locale('input.color_manual'), default = '', description = locale('input.color_manual_desc_edit') },
+        { type = 'input',   label = locale('input.icon_url'), default = orgData.IconURL or '', description = locale('input.icon_url_desc')  },
+        { type = 'input',   label = locale('input.webhook'), default = orgData.Webhook or '', description = locale('input.webhook_desc') },
+        { type = 'input',   label = locale('input.report_webhook'), default = orgData.ReportWebhook or '', description = locale('input.report_webhook_desc') },
+        { type = 'number',  label = locale('input.min_grade'), default = tonumber(orgData.MinReportGrade or 0), description = locale('input.min_grade_desc') }
     })
 
     if not input then return openRootMenu() end
 
+    local colorManual = input[3]
+    local colorPicker = input[2]
+    local finalColor  = (colorManual and colorManual ~= '') and ParseColor(colorManual) or ParseColor(colorPicker)
+
     local payload = {
         LogTitle = input[1],
-        Color = tonumber(input[2]:gsub("#", ""), 16),
-        IconURL = input[3],
-        Webhook = input[4],
-        ReportWebhook = input[5],
-        MinReportGrade = tonumber(input[6]),
+        Color = finalColor,
+        IconURL = input[4],
+        Webhook = input[5],
+        ReportWebhook = input[6],
+        MinReportGrade = tonumber(input[7]),
     }
 
     local result = lib.callback.await('dutylogcfg:saveOrg', false, orgName, payload)
     if result and result.ok then
-        notifyOk('Organização atualizada com sucesso!')
+        notifyOk(locale('notify.org_updated'))
     else
-        notifyErr('Erro ao atualizar organização.')
+        notifyErr(locale('error.update_failed'))
     end
     openRootMenu()
 end
@@ -92,33 +113,35 @@ local function openOrgCard(job, v)
     lib.registerContext({
         id = 'dutylogcfg_org_' .. job,
         menu = 'dutylogcfg_root',
-        title = ('Editar: %s'):format(job),
+        title = locale('menu.edit_org', job),
         options = {
             {
-                title = 'Editar',
+                title = locale('menu.edit'),
                 icon = 'pen',
                 onSelect = function()
                     showEditOrgDialog(job, v)
                 end
             },
             {
-                title = 'Remover',
+                title = locale('menu.remove'),
                 icon = 'trash',
                 onSelect = function()
-                    if lib.alertDialog({
-                        header = 'Confirmar remoção',
-                        content = ('Remover "%s"?'):format(job),
+                    local alert = lib.alertDialog({
+                        header = locale('alert.delete_title'),
+                        content = locale('alert.delete_msg', job),
                         centered = true,
-                        cancel = true
-                    }) ~= 'confirm' then
+                        cancel = true,
+                        labels = { confirm = locale('alert.confirm'), cancel = locale('alert.cancel') }
+                    })
+                    if alert ~= 'confirm' then
                         return openRootMenu()
                     end
 
                     local del = lib.callback.await('dutylogcfg:deleteOrg', false, job)
                     if del and del.ok then
-                        notifyOk('Organização removida!')
+                        notifyOk(locale('notify.org_deleted'))
                     else
-                        notifyErr('Falha ao remover organização.')
+                        notifyErr(locale('error.delete_failed'))
                     end
                     openRootMenu()
                 end
@@ -133,55 +156,57 @@ local function openToolsMenu()
 
     local isStaff = lib.callback.await('dutylogcfg:isStaff', false)
     if not isStaff then
-        return notifyErr('Você não tem permissão.')
+        return notifyErr(locale('error.no_permission'))
     end
 
     lib.registerContext({
         id = 'dutylogcfg_tools',
         menu = 'dutylogcfg_root',
-        title = 'Ferramentas do Ponto',
+        title = locale('menu.tools_title'),
         options = {
             {
-                title = 'Limpar histórico de ponto',
-                description = 'Apaga TODO o conteúdo do duty_logs.json (STAFF)',
+                title = locale('backup.opt_clear'),
+                description = locale('backup.opt_clear_desc'),
                 icon = 'broom',
                 onSelect = function()
                     local res = lib.alertDialog({
-                        header = 'Confirmar limpeza',
-                        content = 'Isso vai apagar TODOS os registros do duty_logs.json.\nDeseja continuar?',
+                        header = locale('alert.confirm_clear_title'),
+                        content = locale('alert.confirm_clear_msg'),
                         centered = true,
-                        cancel = true
+                        cancel = true,
+                        labels = { confirm = locale('alert.confirm'), cancel = locale('alert.cancel') }
                     })
                     if res ~= 'confirm' then
-                        notifyWarn('Limpeza cancelada.')
+                        notifyWarn(locale('notify.clear_cancelled'))
                         return openRootMenu()
                     end
 
                     ExecuteCommand('cleardutylogs')
 
-                    notifyOk('Solicitação de limpeza enviada. Verifique a notificação.')
+                    notifyOk(locale('notify.clear_sent'))
                     openRootMenu()
                 end
             },
             {
-                title = 'Criar backup do histórico',
-                description = 'Gera um arquivo em backups/ com o conteúdo atual do duty_logs.json',
+                title = locale('backup.opt_backup'),
+                description = locale('backup.opt_backup_desc'),
                 icon = 'box-archive',
                 onSelect = function()
                     local res = lib.alertDialog({
-                        header = 'Confirmar backup',
-                        content = 'Será criado um backup do duty_logs.json em backups/ com data e hora.\nDeseja continuar?',
+                        header = locale('alert.confirm_backup_title'),
+                        content = locale('alert.confirm_backup_msg'),
                         centered = true,
-                        cancel = true
+                        cancel = true,
+                        labels = { confirm = locale('alert.confirm'), cancel = locale('alert.cancel') }
                     })
                     if res ~= 'confirm' then
-                        notifyWarn('Backup cancelado.')
+                        notifyWarn(locale('notify.backup_cancelled'))
                         return openRootMenu()
                     end
 
                     ExecuteCommand('backupdutylogs')
 
-                    notifyOk('Solicitação de backup enviada. Verifique a notificação.')
+                    notifyOk(locale('notify.backup_sent'))
                     openRootMenu()
                 end
             },
@@ -193,23 +218,29 @@ end
 -- Root Menu
 function openRootMenu()
     local isStaff = lib.callback.await('dutylogcfg:isStaff', false)
-    if not isStaff then return notifyErr('Você não tem permissão.') end
+    if not isStaff then return notifyErr(locale('error.no_permission')) end
 
-    local resp = lib.callback.await('dutylogcfg:getAll', false)
-    if not resp or not resp.ok then return notifyErr('Falha ao carregar organizações.') end
+    local resp = lib.callback.await('dutylogcfg:getAll_v2', false)
+    if not resp or not resp.ok then return notifyErr(locale('error.load_failed')) end
 
-    local data, options = resp.data or {}, {}
+    -- Decodifica o JSON string que vem do servidor
+    local dataList = {}
+    if resp.json and type(resp.json) == 'string' then
+        dataList = json.decode(resp.json) or {}
+    end
+
+    local options = {}
 
     options[#options+1] = {
-        title = 'Adicionar organização',
-        description = 'Criar um novo registro para um job',
+        title = locale('menu.add_org'),
+        description = locale('menu.add_org_desc'),
         icon = 'plus',
         onSelect = showCreateOrgDialog
     }
 
     options[#options+1] = {
-        title = 'Ferramentas do Ponto',
-        description = 'Ações administrativas (ex.: limpar histórico / backup)',
+        title = locale('menu.tools'),
+        description = locale('menu.tools_desc'),
         icon = 'toolbox',
         arrow = true,
         onSelect = function()
@@ -217,14 +248,20 @@ function openRootMenu()
         end
     }
 
-    for job, v in pairs(data) do
-        options[#options+1] = {
-            title = job,
-            description = (v.LogTitle or '') .. '\nMinGrade: ' .. (v.MinReportGrade or 0),
-            icon = 'building',
-            arrow = true,
-            onSelect = function() openOrgCard(job, v) end
-        }
+    -- Ordenar por nome (opcional, mas bom)
+    table.sort(dataList, function(a,b) return (a.jobName or '') < (b.jobName or '') end)
+
+    for _, item in ipairs(dataList) do
+        local jobName = item.jobName
+        if jobName then
+            options[#options+1] = {
+                title = jobName,
+                description = (item.LogTitle or '') .. '\nMinGrade: ' .. (item.MinReportGrade or 0),
+                icon = 'building',
+                arrow = true,
+                onSelect = function() openOrgCard(jobName, item) end
+            }
+        end
     end
 
     lib.registerContext({
@@ -242,4 +279,31 @@ RegisterCommand('logtools', function() openToolsMenu() end, false)
 CreateThread(function()
     TriggerEvent('chat:addSuggestion', '/logconfig', 'Abrir configurador de organizações (ADMIN)')
     TriggerEvent('chat:addSuggestion', '/logtools',  'Abrir ferramentas administrativas do ponto (ADMIN)')
+end)
+
+-- ============================================================
+--  DUTY LOGIC (LISTENER)
+-- ============================================================
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    local Player = QBCore.Functions.GetPlayerData()
+    if Player.job and Player.job.onduty then
+        TriggerServerEvent('kael-dutylog:server:userjoined', Player.job.name, true)
+    end
+end)
+
+RegisterNetEvent('QBCore:Client:SetDuty', function(onDuty)
+    local Player = QBCore.Functions.GetPlayerData()
+    if not Player or not Player.job then return end
+    
+    if onDuty then
+        TriggerServerEvent('kael-dutylog:server:onDuty', Player.job.name)
+    else
+        TriggerServerEvent('kael-dutylog:server:offDuty', Player.job.name)
+    end
+end)
+
+RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
+    if JobInfo.onduty then
+        TriggerServerEvent('kael-dutylog:server:onDuty', JobInfo.name)
+    end
 end)

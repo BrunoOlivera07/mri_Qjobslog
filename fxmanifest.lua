@@ -7,17 +7,21 @@ description 'Duty Logs + In-game Configurator (ox_lib)'
 version '1.0.0'
 
 shared_scripts {
-    '@ox_lib/init.lua',   -- ox_lib
+    '@ox_lib/init.lua',
     'shared/config.lua',
+    'shared/locale.lua'
 }
 
 client_scripts {
     'client/config_ui.lua',
-    'client/*.lua',       -- seus outros clients (opcional)
 }
 
 server_scripts {
-    'server/config_store.lua',
-    'server/main.lua',       -- seus outros servers (opcional)
+    'server/main.lua',
     'server/backup_logs.lua'
+}
+
+files {
+    'mri_Qjobslog.sql',
+    'locales/*.json'
 }
