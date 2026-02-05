@@ -1,4 +1,5 @@
 local QBCore = exports[Config.Core]:GetCoreObject()
+lib.locale()
 
 local RESOURCE = GetCurrentResourceName()
 
@@ -332,8 +333,8 @@ AddEventHandler('playerDropped', function()
 end)
 
 -- === RELATÓRIO POR ORG, COM PERMISSÃO DE GRADE ===
-QBCore.Commands.Add('relatorioorg', _U('cmd.relatorioorg_help'), {
-    { name = 'dias', help = _U('cmd.days_param') }
+QBCore.Commands.Add('relatorioorg', locale('cmd.relatorioorg_help'), {
+    { name = 'dias', help = locale('cmd.days_param') }
 }, false, function(source, args)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
@@ -341,7 +342,7 @@ QBCore.Commands.Add('relatorioorg', _U('cmd.relatorioorg_help'), {
 
     local job = Player.PlayerData.job and Player.PlayerData.job.name
     if not job or not Config.AuthJobs[job] then
-        if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('error_job_not_authorized'), 'error') end
+        if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('error_job_not_authorized'), 'error') end
         return
     end
 
@@ -358,7 +359,7 @@ QBCore.Commands.Add('relatorioorg', _U('cmd.relatorioorg_help'), {
 
     local minG = tonumber(jobCfg.MinReportGrade or 0) or 0
     if gradeLevel < minG then
-        if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('error_min_grade', minG), 'error') end
+        if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('error_min_grade', minG), 'error') end
         return
     end
 
@@ -377,7 +378,7 @@ QBCore.Commands.Add('relatorioorg', _U('cmd.relatorioorg_help'), {
 
     exports.oxmysql:execute(query, queryArgs, function(results)
         if not results or #results == 0 then
-            if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('error_no_logs'), 'error') end
+            if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('error_no_logs'), 'error') end
             return
         end
 
@@ -415,7 +416,7 @@ QBCore.Commands.Add('relatorioorg', _U('cmd.relatorioorg_help'), {
         SaveResourceFile(GetCurrentResourceName(), fileName, csvContent, #csvContent)
         
         if src > 0 then 
-            TriggerClientEvent('QBCore:Notify', src, _U('success_report_generated', fileName), 'success') 
+            TriggerClientEvent('QBCore:Notify', src, locale('success_report_generated', fileName), 'success') 
         end
 
         -------------------------------------------------------
@@ -451,7 +452,7 @@ QBCore.Commands.Add('relatorioorg', _U('cmd.relatorioorg_help'), {
         -- escolhe webhook específico da org (fallback para Webhook normal)
         local webhook = jobCfg.ReportWebhook or jobCfg.Webhook
         if not webhook or webhook == "" then
-            if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('error_webhook_not_configured'), 'error') end
+            if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('error_webhook_not_configured'), 'error') end
             return
         end
         
@@ -470,14 +471,14 @@ QBCore.Commands.Add('relatorioorg', _U('cmd.relatorioorg_help'), {
 
         UploadCSVToDiscord(webhook, csvContent, "Relatorio_"..job..".xls", payload)
 
-        if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('success_report_sent'), 'success') end
+        if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('success_report_sent'), 'success') end
     end)
 end, 'user')
 
 -- /relatorioplayer <citizenid> [dias]
-QBCore.Commands.Add('relatorioplayer', _U('cmd.relatorioplayer_help'), {
-    { name = 'citizenid', help = _U('cmd.citizenid_param') },
-    { name = 'dias', help = _U('cmd.days_param') }
+QBCore.Commands.Add('relatorioplayer', locale('cmd.relatorioplayer_help'), {
+    { name = 'citizenid', help = locale('cmd.citizenid_param') },
+    { name = 'dias', help = locale('cmd.days_param') }
 }, false, function(source, args)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
@@ -485,13 +486,13 @@ QBCore.Commands.Add('relatorioplayer', _U('cmd.relatorioplayer_help'), {
 
     local cidTarget = args[1]
     if not cidTarget then 
-        TriggerClientEvent('QBCore:Notify', src, _U('error_invalid_citizenid'), 'error')
+        TriggerClientEvent('QBCore:Notify', src, locale('error_invalid_citizenid'), 'error')
         return
     end
 
     local job = Player.PlayerData.job and Player.PlayerData.job.name
     if not job or not Config.AuthJobs[job] then
-        TriggerClientEvent('QBCore:Notify', src, _U('error_job_not_authorized'), 'error')
+        TriggerClientEvent('QBCore:Notify', src, locale('error_job_not_authorized'), 'error')
         return
     end
     
@@ -507,7 +508,7 @@ QBCore.Commands.Add('relatorioplayer', _U('cmd.relatorioplayer_help'), {
 
     local minG = tonumber(jobCfg.MinReportGrade or 0) or 0
     if gradeLevel < minG then
-        TriggerClientEvent('QBCore:Notify', src, _U('error_min_grade', minG), 'error')
+        TriggerClientEvent('QBCore:Notify', src, locale('error_min_grade', minG), 'error')
         return
     end
 
@@ -526,7 +527,7 @@ QBCore.Commands.Add('relatorioplayer', _U('cmd.relatorioplayer_help'), {
 
     exports.oxmysql:execute(query, queryArgs, function(results)
         if not results or #results == 0 then
-            TriggerClientEvent('QBCore:Notify', src, _U('error_no_logs_citizenid'), 'error')
+            TriggerClientEvent('QBCore:Notify', src, locale('error_no_logs_citizenid'), 'error')
             return
         end
 
@@ -561,7 +562,7 @@ QBCore.Commands.Add('relatorioplayer', _U('cmd.relatorioplayer_help'), {
         local fileName = ("reports/RelatorioIndividual_%s_%s_%s.xls"):format(cidTarget, job, os.date("%Y-%m-%d_%H-%M-%S"))
         SaveResourceFile(GetCurrentResourceName(), fileName, csvContent, #csvContent)
         
-        TriggerClientEvent('QBCore:Notify', src, _U('success_individual_report'), 'success')
+        TriggerClientEvent('QBCore:Notify', src, locale('success_individual_report'), 'success')
 
         -- Executor Info
         local executorName = ('%s %s'):format(Player.PlayerData.charinfo.firstname, Player.PlayerData.charinfo.lastname)
@@ -610,9 +611,9 @@ QBCore.Commands.Add('relatorioplayer', _U('cmd.relatorioplayer_help'), {
 end, 'user')
 
 -- /relatoriojob ADMIN
-QBCore.Commands.Add('relatoriojob', _U('cmd.relatoriojob_help'), {
-    { name = 'job',  help = _U('cmd.job_param') },
-    { name = 'dias', help = _U('cmd.days_param') }
+QBCore.Commands.Add('relatoriojob', locale('cmd.relatoriojob_help'), {
+    { name = 'job',  help = locale('cmd.job_param') },
+    { name = 'dias', help = locale('cmd.days_param') }
 }, true, function(source, args)
     local src  = source
     local job  = tostring(args[1] or ''):lower()
@@ -625,13 +626,13 @@ QBCore.Commands.Add('relatoriojob', _U('cmd.relatoriojob_help'), {
     end
 
     if job == '' then
-        if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('error.usage_relatoriojob'), 'error') end
+        if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('error.usage_relatoriojob'), 'error') end
         return
     end
 
     local jobCfg = Config.AuthJobs[job]
     if not jobCfg then
-        if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('error.job_not_found', job), 'error') end
+        if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('error.job_not_found', job), 'error') end
         return
     end
 
@@ -648,7 +649,7 @@ QBCore.Commands.Add('relatoriojob', _U('cmd.relatoriojob_help'), {
 
     exports.oxmysql:execute(query, queryArgs, function(results)
         if not results or #results == 0 then
-            if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('error.no_logs'), 'error') end
+            if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('error.no_logs'), 'error') end
             return
         end
 
@@ -684,7 +685,7 @@ QBCore.Commands.Add('relatoriojob', _U('cmd.relatoriojob_help'), {
         SaveResourceFile(GetCurrentResourceName(), fileName, csvContent, #csvContent)
         
         if src > 0 then 
-            TriggerClientEvent('QBCore:Notify', src, _U('success.report_generated', fileName), 'success') 
+            TriggerClientEvent('QBCore:Notify', src, locale('success.report_generated', fileName), 'success') 
         end
         
         -------------------------------------------------------
@@ -733,7 +734,7 @@ QBCore.Commands.Add('relatoriojob', _U('cmd.relatoriojob_help'), {
         --STAFF WEBHOOK EXCLUSIVO (sem fallback)
         local webhook = Config.StaffWebhook
         if not webhook or webhook == "" then
-            if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('error.staff_webhook_not_configured'), 'error') end
+            if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('error.staff_webhook_not_configured'), 'error') end
             return
         end
 
@@ -752,7 +753,7 @@ QBCore.Commands.Add('relatoriojob', _U('cmd.relatoriojob_help'), {
 
         UploadCSVToDiscord(webhook, csvContent, "RelatorioAdmin_"..job..".xls", payload)
 
-        if src > 0 then TriggerClientEvent('QBCore:Notify', src, _U('success.staff_report'), 'success') end
+        if src > 0 then TriggerClientEvent('QBCore:Notify', src, locale('success.staff_report'), 'success') end
     end)
 end, 'admin')
 

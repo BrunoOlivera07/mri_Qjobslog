@@ -8,13 +8,12 @@ Permite que organizações controlem a entrada e saída de serviço dos seus mem
 
 ## 🌟 Novidades (v2.0)
 
+- **Nova UI (Dashboard):** Painel moderno para gerenciar tudo.
 - **Banco de Dados SQL:** Adeus arquivos JSON! Todos os logs e configurações agora são salvos no MySQL (`oxmysql`).
 - **Relatórios Unificados:** Embeds bonitos no Discord com arquivo `.xls` anexado na mesma mensagem.
 - **Localização:** Suporte completo a tradução (padrão: `pt-br`) via arquivo JSON aninhado.
 - **Relatório Individual:** Puxe a capivara completa de um único jogador.
 - **Proteção de Dados:** Logs incluem Passaporte (CitizenID), Discord ID e Nome.
-
----
 
 ## 🧰 Funcionalidades
 

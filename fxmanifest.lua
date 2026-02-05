@@ -1,27 +1,34 @@
 fx_version 'cerulean'
-lua54 'yes'
 game 'gta5'
-
-author 'Gordela | New Age Studios | Refatorado por S&S STORE - SNOW DEV'
-description 'Duty Logs + In-game Configurator (ox_lib)'
+author 'MRI'
+description 'Sistema de Logs de Ponto com UI Moderna'
 version '2.0.0'
 
 shared_scripts {
-    '@ox_lib/init.lua',
     'shared/config.lua',
-    'shared/locale.lua'
+    '@ox_lib/init.lua',
 }
 
 client_scripts {
+    'client/main.lua',
     'client/config_ui.lua',
 }
 
 server_scripts {
     'server/main.lua',
-    'server/backup_logs.lua'
+    'server/config_store.lua',
+    'server/backup_logs.lua',
 }
 
+ui_page 'web/dist/index.html'
+
 files {
-    -- 'mri_Qjobslog.sql',
-    'locales/*.json'
+    'web/dist/index.html',
+    'web/dist/assets/*.js', 
+    'web/dist/assets/*.css',
+    'web/src/**/*', -- Just in case dev mode
+    'web/*.tsx',
+    'web/*.tsx',
+    'web/*.ts',
+    'locales/*.json',
 }
