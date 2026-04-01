@@ -1,0 +1,33 @@
+{
+  "name": "mri_qjobslog",
+  "version": "1.0.0",
+  "description": "Sistema avançado de controle de ponto e relatórios para QBCore, integrado com Discord e MySQL.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrunoOlivera07/mri_Qjobslog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BrunoOlivera07/mri_Qjobslog/issues"
+  },
+  "homepage": "https://github.com/BrunoOlivera07/mri_Qjobslog#readme",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "cors": "^2.8.6",
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.3.1",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "moment": "^2.30.1",
+    "multer": "^2.1.1",
+    "mysql2": "^3.20.0"
+  }
+}
