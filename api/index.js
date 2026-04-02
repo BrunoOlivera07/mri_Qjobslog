@@ -27,7 +27,7 @@ const upload = multer({ storage: storage });
 
 function initApi(client) {
     const app = express();
-    const PORT = process.env.API_PORT || 3001;
+    const PORT = process.env.PORT || process.env.API_PORT || 3001;
     const JWT_SECRET = process.env.JWT_SECRET || 'secret_para_dev_mudar_depois';
     
     // Configurações do OAuth2 Discord
